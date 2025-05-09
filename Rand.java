@@ -1,67 +1,49 @@
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
+// Rand.java
 import java.security.SecureRandom;
 
 public class Rand {
     private static SecureRandom rand;
 
-    static {new Rand();}
-
-    public Rand() {
+    static {
         try {
-            rand = SecureRandom.getInstance("SHA1PRNG", "SUN");
-        } catch (NoSuchAlgorithmException nsaEx) {
-            nsaEx.printStackTrace();
-            byte[] seed = SecureRandom.getSeed(128);
-            rand = new SecureRandom(seed);
-        } catch (NoSuchProviderException nspEx) {
-            nspEx.printStackTrace();
-            byte[] seed = SecureRandom.getSeed(128);
-            rand = new SecureRandom(seed);
+            rand = SecureRandom.getInstance("SHA1PRNG");
+        } catch (Exception e) {
+            rand = new SecureRandom();
         }
     }
 
-    public Rand(byte[] seed) {
-        rand = new SecureRandom(seed);
-    }
-
+    /** Get the singleton SecureRandom. */
     public static SecureRandom getRand() {
         return rand;
     }
 
+    /** Uniform int in [0, max). */
     public static int randInt(int max) {
         return rand.nextInt(max);
     }
 
-    public static long randLong() {
-        return rand.nextLong(0L, Long.MAX_VALUE);
+    /** Uniform int in [min, max], inclusive. */
+    public static int randInt(int min, int max) {
+        return rand.nextInt(max - min + 1) + min;
     }
 
+    /** Uniform non-negative long. */
+    public static long randLong() {
+        long x = rand.nextLong();
+        return (x == Long.MIN_VALUE) ? 0L : Math.abs(x);
+    }
+
+    /** Gaussian with mean and stddev. */
+    public static double randGauss(double mean, double stddev) {
+        return mean + stddev * rand.nextGaussian();
+    }
+
+    /** Random bit-array of length len. */
     public static boolean[] randBits(int len) {
         boolean[] bits = new boolean[len];
-        return null;
-    }
-
-    public static int randInt(int min, int max) {
-        return rand.nextInt(min, max+1);
-    }
-
-    public static double randGauss(double mean, double stddev) {
-        return rand.nextGaussian(mean, stddev);
-    }
-
-    public static void main(String[] args) {
-        Rand rand = new Rand();
-        for (int i = 0; i < 20; i++) {
-            System.out.println(rand.randInt(5));
+        for (int i = 0; i < len; i++) {
+            bits[i] = rand.nextBoolean();
         }
-        System.out.println();
-        for (int i = 0; i < 20; i++) {
-            System.out.println(rand.randInt(1, 6));
-        }
-        System.out.println();
-        for (int i = 0; i < 20; i++) {
-            System.out.println(rand.randGauss(100, 10));
-        }
+        return bits;
     }
 }
